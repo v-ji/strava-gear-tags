@@ -20,7 +20,6 @@ class TokenManager:
         """Create tokens file if it doesn't exist"""
         if not self.tokens_file.exists():
             self.tokens_file.write_text("{}")
-        logger.info(f"Token file: {self.tokens_file}")
 
     def _load_tokens(self):
         """Load tokens from JSON file"""
