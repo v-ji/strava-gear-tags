@@ -1,18 +1,16 @@
 import os
-from dotenv import load_dotenv
 import logging
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Load environment variables
-load_dotenv()
-
 # Strava API configuration
 STRAVA_CLIENT_ID = int(os.environ["STRAVA_CLIENT_ID"])
 STRAVA_CLIENT_SECRET = os.environ["STRAVA_CLIENT_SECRET"]
 CALLBACK_URL = os.environ.get("CALLBACK_URL", "http://localhost:8000/strava/callback")
+
+STATE_DIR = os.environ.get("STATE_DIRECTORY", ".")
 
 # Validate credentials
 if not STRAVA_CLIENT_ID or not STRAVA_CLIENT_SECRET:

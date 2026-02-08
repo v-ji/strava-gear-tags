@@ -31,7 +31,6 @@
           fastapi
           uvicorn
           stravalib
-          python-dotenv
           pillow
           types-pillow
         ];

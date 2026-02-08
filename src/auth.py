@@ -6,20 +6,21 @@ import json
 import logging
 
 from stravalib.protocol import AccessInfo
-from .config import STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
+from .config import STATE_DIR, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
 
 logger = logging.getLogger(__name__)
 
 
 class TokenManager:
     def __init__(self, tokens_file="strava_tokens.json"):
-        self.tokens_file = Path(tokens_file)
+        self.tokens_file = STATE_DIR / Path(tokens_file)
         self._ensure_tokens_file()
 
     def _ensure_tokens_file(self):
         """Create tokens file if it doesn't exist"""
         if not self.tokens_file.exists():
             self.tokens_file.write_text("{}")
+        logger.info(f"Token file: {self.tokens_file}")
 
     def _load_tokens(self):
         """Load tokens from JSON file"""
