@@ -1,11 +1,15 @@
 from PIL import Image, ImageDraw, ImageFont
+import os # Added import
+
+# Define a base path for assets relative to the current script
+ASSETS_BASE_PATH = os.path.join(os.path.dirname(__file__), "assets")
 
 brand_config = {
     "Canyon": {
-        "logo_path": "src/assets/brands/canyon.png",
+        "logo_path": os.path.join(ASSETS_BASE_PATH, "brands", "canyon.png"),
     },
     "Adidas": {
-        "logo_path": "src/assets/brands/adidas.png",
+        "logo_path": os.path.join(ASSETS_BASE_PATH, "brands", "adidas.png"),
     },
     "Nike": {
         "logo_path": "src/assets/brands/nike.png",

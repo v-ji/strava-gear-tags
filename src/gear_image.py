@@ -1,17 +1,21 @@
 import logging
+import os # Added import
 from PIL import Image, ImageDraw, ImageFont
+
+# Define a base path for assets relative to the current script
+ASSETS_BASE_PATH = os.path.join(os.path.dirname(__file__), "assets")
 
 brand_config = {
     "Canyon": {
-        "frame_path": "src/assets/frames/canyon.png",
+        "frame_path": os.path.join(ASSETS_BASE_PATH, "frames", "canyon.png"),
         "padding-left": 28,
     },
     "Adidas": {
-        "frame_path": "src/assets/frames/adidas.png",
+        "frame_path": os.path.join(ASSETS_BASE_PATH, "frames", "adidas.png"),
         "padding-left": 4,
     },
     "Nike": {
-        "frame_path": "src/assets/frames/nike.png",
+        "frame_path": os.path.join(ASSETS_BASE_PATH, "frames", "nike.png"),
         "padding-left": 4,
     },
 }
@@ -49,10 +53,10 @@ def create_gear_image(gear_stats: dict):
     FONT_SIZE = 34
 
     font_regular = ImageFont.truetype(
-        "src/assets/dinish-otf/DINish-Medium.otf", size=FONT_SIZE
+        os.path.join(ASSETS_BASE_PATH, "dinish-otf", "DINish-Medium.otf"), size=FONT_SIZE
     )
     font_bold = ImageFont.truetype(
-        "src/assets/dinish-otf/DINish-Bold.otf", size=FONT_SIZE
+        os.path.join(ASSETS_BASE_PATH, "dinish-otf", "DINish-Bold.otf"), size=FONT_SIZE
     )
 
     padding_left = specs["padding-left"]
