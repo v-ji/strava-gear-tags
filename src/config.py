@@ -12,11 +12,11 @@ load_dotenv()
 # Strava API configuration
 STRAVA_CLIENT_ID = int(os.environ["STRAVA_CLIENT_ID"])
 STRAVA_CLIENT_SECRET = os.environ["STRAVA_CLIENT_SECRET"]
-CALLBACK_URL = "http://localhost:8000/strava/callback"
+CALLBACK_URL = os.environ.get("CALLBACK_URL", "http://localhost:8000/strava/callback")
 
 # Validate credentials
 if not STRAVA_CLIENT_ID or not STRAVA_CLIENT_SECRET:
-    raise ValueError("Missing Strava credentials in .env file")
+    raise ValueError("Missing Strava credentials in environment")
 
 try:
     STRAVA_CLIENT_ID = int(STRAVA_CLIENT_ID)

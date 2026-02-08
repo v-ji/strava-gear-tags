@@ -1,0 +1,84 @@
+import logging
+from PIL import Image, ImageDraw, ImageFont
+
+brand_config = {
+    "Canyon": {
+        "frame_path": "src/assets/frames/canyon.png",
+        "padding-left": 28,
+    },
+    "Adidas": {
+        "frame_path": "src/assets/frames/adidas.png",
+        "padding-left": 4,
+    },
+    "Nike": {
+        "frame_path": "src/assets/frames/nike.png",
+        "padding-left": 4,
+    },
+}
+
+
+def create_gear_image(gear_stats: dict):
+    """Generate an image for a specific piece of gear"""
+
+    brand_name = gear_stats["brand_name"]
+    specs = brand_config.get(brand_name)
+
+    if not specs:
+        logging.warning(f"Configuration not found for brand: {brand_name}")
+        raise ValueError(f"Brand not configured: {brand_name}")
+
+    # Create a new RGBA image (work in full color with alpha)
+    image = Image.new("RGBA", (296, 152), (255, 255, 255, 255))  # white background
+
+    # Load frame file
+    frame = Image.open(specs["frame_path"])
+
+    # Convert frame to RGBA and ensure it matches image size
+    if frame.mode != "RGBA":
+        frame = frame.convert("RGBA")
+    if frame.size != image.size:
+        frame = frame.resize(image.size, Image.LANCZOS)
+
+    # Composite frame onto canvas
+    image.alpha_composite(frame, (0, 0))
+
+    # Initialise the drawing context
+    draw = ImageDraw.Draw(image)
+    draw.fontmode = "1"  # disable anti-aliasing
+
+    FONT_SIZE = 34
+
+    font_regular = ImageFont.truetype(
+        "src/assets/dinish-otf/DINish-Medium.otf", size=FONT_SIZE
+    )
+    font_bold = ImageFont.truetype(
+        "src/assets/dinish-otf/DINish-Bold.otf", size=FONT_SIZE
+    )
+
+    padding_left = specs["padding-left"]
+
+    BLACK = (0, 0, 0, 255)
+
+    start_y = -4
+    line_spacing = 5
+    text_positions = [
+        (padding_left, y)
+        for y in range(start_y, image.height, FONT_SIZE + line_spacing)
+    ]
+
+    # Define the text lines from gear_stats
+    gear_name = gear_stats["name"].replace(brand_name, "").strip()
+    gear_distance = f"{gear_stats['distance_km']:.0f} km"
+    gear_30d_distance = f"{gear_stats['last_30_days']['distance_km']:.0f} km (30d)"
+
+    # Write the text on the image
+    draw.text(text_positions[0], gear_name, fill=BLACK, font=font_bold)
+    draw.text(text_positions[1], gear_distance, fill=BLACK, font=font_regular)
+    draw.text(text_positions[3], gear_30d_distance, fill=BLACK, font=font_regular)
+
+    # Draw "XXXXX" test lines
+    # for pos in text_positions:
+    #     draw.text(pos, "XXXXX", fill=BLACK, font=font_regular)
+
+    # Return image as RGB
+    return image.convert("RGB")

@@ -5,6 +5,9 @@ from ..auth import get_client
 from stravalib import unit_helper
 from typing import List
 from pydantic import BaseModel
+import io
+from fastapi.responses import StreamingResponse
+from ..gear_image import create_gear_image
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -48,6 +51,29 @@ async def list_gear(user_id: str):
         raise he
     except Exception as e:
         logger.error(f"Error fetching gear list for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/users/{user_id}/gear/{gear_id}.jpg", response_class=StreamingResponse)
+async def get_gear_image(user_id: str, gear_id: str):
+    """Get stats for specific piece of gear for a specific user as a JPEG image"""
+    try:
+        stats = await get_gear_stats(user_id, gear_id)
+        image = create_gear_image(stats)
+
+        buffer = io.BytesIO()
+        image.save(buffer, format="JPEG", quality="maximum")
+        buffer.seek(0)
+
+        return StreamingResponse(buffer, media_type="image/jpeg")
+
+    except HTTPException as he:
+        # Pass through authentication-related exceptions
+        raise he
+    except Exception as e:
+        logger.error(
+            f"Error generating gear image for user {user_id}, gear {gear_id}: {e}"
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -101,6 +127,8 @@ async def get_gear_stats(user_id: str, gear_id: str):
                     / 1000,
                     1,
                 )
+                if gear_activities_30d["activities"]
+                else 0
             },
             "distance_km": round(unit_helper.meter(gear.distance).magnitude / 1000, 0)
             if gear.distance is not None
@@ -115,5 +143,4 @@ async def get_gear_stats(user_id: str, gear_id: str):
         logger.error(
             f"Error fetching gear stats for user {user_id}, gear {gear_id}: {e}"
         )
-        raise e
         raise HTTPException(status_code=500, detail=str(e))

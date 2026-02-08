@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
-import webbrowser
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from stravalib.client import Client
 from pydantic import BaseModel
 
@@ -50,7 +50,7 @@ async def root(request: Request):
     }
 
 
-@router.get("/strava/auth")
+@router.get("/strava/auth", response_class=RedirectResponse)
 async def strava_auth():
     """Start Strava OAuth flow"""
     auth_url = strava_client.authorization_url(
@@ -59,8 +59,7 @@ async def strava_auth():
         scope=["read", "read_all", "profile:read_all", "activity:read_all"],
     )
     logger.info(f"Generated auth URL: {auth_url}")
-    webbrowser.open(auth_url)
-    return {"message": "Please check your browser to complete authentication"}
+    return RedirectResponse(auth_url)
 
 
 @router.get("/strava/callback")
