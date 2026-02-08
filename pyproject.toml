@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling>=1.5"]
+build-backend = "hatchling.build"
+
+[project]
+name = "strava-gear-tags"
+version = "0.1.0"
+description = "Strava Gear Stats"
+
+[project.scripts]
+strava-gear-tags = "src.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

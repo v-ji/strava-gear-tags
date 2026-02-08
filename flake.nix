@@ -51,24 +51,35 @@
         }
       );
 
-      # Add uvicorn app
       packages = forAllSystems (
         { pkgs }:
         {
-          default = pythonVersion.buildPythonApplication {
-            pname = "strava-gear-stats";
+          default = pkgs.python3Packages.buildPythonApplication rec {
+            pname = "strava-gear-tags";
             version = "0.1.0";
-            format = "setuptools";
+            pyproject = true;
 
             src = ./.;
 
-            propagatedBuildInputs = [ (getPythonEnv pkgs (ps: [ ])) ];
-            # meta = with lib; {
-            #   ...
-            # };
+            dependencies = getPythonPackages pkgs pkgs.python3Packages;
+            build-system = [ pkgs.python3Packages.hatchling ];
+
+            meta = {
+              mainProgram = pname;
+            };
           };
         }
       );
 
+      # Define applications that can be run directly (e.g., `nix run .`)
+      apps = forAllSystems (
+        { pkgs }:
+        {
+          default = {
+            type = "app";
+            program = pkgs.lib.getExe self.packages.${pkgs.system}.default;
+          };
+        }
+      );
     };
 }
