@@ -1,5 +1,5 @@
 import logging
-import os # Added import
+import os
 from PIL import Image, ImageDraw, ImageFont
 
 # Define a base path for assets relative to the current script
@@ -53,7 +53,8 @@ def create_gear_image(gear_stats: dict):
     FONT_SIZE = 34
 
     font_regular = ImageFont.truetype(
-        os.path.join(ASSETS_BASE_PATH, "dinish-otf", "DINish-Medium.otf"), size=FONT_SIZE
+        os.path.join(ASSETS_BASE_PATH, "dinish-otf", "DINish-Medium.otf"),
+        size=FONT_SIZE,
     )
     font_bold = ImageFont.truetype(
         os.path.join(ASSETS_BASE_PATH, "dinish-otf", "DINish-Bold.otf"), size=FONT_SIZE
@@ -73,16 +74,12 @@ def create_gear_image(gear_stats: dict):
     # Define the text lines from gear_stats
     gear_name = gear_stats["name"].replace(brand_name, "").strip()
     gear_distance = f"{gear_stats['distance_km']:.0f} km"
-    gear_30d_distance = f"{gear_stats['last_30_days']['distance_km']:.0f} km (30d)"
+    gear_this_week_distance = f"{gear_stats['this_week']['distance_km']:.0f} km (7d)"
 
     # Write the text on the image
     draw.text(text_positions[0], gear_name, fill=BLACK, font=font_bold)
     draw.text(text_positions[1], gear_distance, fill=BLACK, font=font_regular)
-    draw.text(text_positions[3], gear_30d_distance, fill=BLACK, font=font_regular)
-
-    # Draw "XXXXX" test lines
-    # for pos in text_positions:
-    #     draw.text(pos, "XXXXX", fill=BLACK, font=font_regular)
+    draw.text(text_positions[3], gear_this_week_distance, fill=BLACK, font=font_regular)
 
     # Return image as RGB
     return image.convert("RGB")

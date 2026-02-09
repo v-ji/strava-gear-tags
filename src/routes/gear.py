@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 from ..auth import get_client
 from stravalib import unit_helper
@@ -27,6 +27,7 @@ class GearStats(BaseModel):
     name: str
     brand_name: str
     last_30_days: dict
+    this_week: dict
     distance_km: float
     timestamp: str
 
@@ -83,9 +84,14 @@ async def get_gear_stats(user_id: str, gear_id: str):
     try:
         client = get_client(user_id)
         gear = client.get_gear(gear_id)
-        activities_30d = client.get_activities(
-            after=datetime.now() - timedelta(days=30)
-        )
+
+        # Calculate start of this week (Monday)
+        today = datetime.now(timezone.utc)
+        start_of_week = today - timedelta(days=today.weekday())  # Monday is 0
+
+        activities = client.get_activities(
+            after=start_of_week - timedelta(days=30)
+        )  # Fetch enough activities to cover both ranges
 
         gear_activities_30d = {
             "distance_m": 0,
@@ -93,31 +99,66 @@ async def get_gear_stats(user_id: str, gear_id: str):
             "activities": [],
         }
 
-        for activity in activities_30d:
-            if getattr(activity, "gear_id", None) == gear_id:
-                gear_activities_30d["activities"].append(activity)
-                # Check if distance exists and is not None
-                if activity.distance is not None:
-                    gear_activities_30d["distance_m"] += unit_helper.meter(
-                        activity.distance
-                    ).magnitude
-                if activity.moving_time is not None:
-                    gear_activities_30d["moving_time"] += (
-                        activity.moving_time.timedelta()
-                    )
+        gear_activities_this_week = {
+            "distance_m": 0,
+            "moving_time": timedelta(seconds=0),
+            "activities": [],
+        }
 
-        m_time = gear_activities_30d["moving_time"]
-        gear_activities_30d["moving_time_s"] = m_time.seconds
-        gear_activities_30d["moving_time_hh_mm"] = ":".join(str(m_time).split(":")[:2])
+        for activity in activities:
+            if getattr(activity, "gear_id", None) == gear_id:
+                # Accumulate for last 30 days
+                if activity.start_date >= (today - timedelta(days=30)):
+                    gear_activities_30d["activities"].append(activity)
+                    if activity.distance is not None:
+                        gear_activities_30d["distance_m"] += unit_helper.meter(
+                            activity.distance
+                        ).magnitude
+                    if activity.moving_time is not None:
+                        gear_activities_30d["moving_time"] += (
+                            activity.moving_time.timedelta()
+                        )
+
+                # Accumulate for this week
+                if activity.start_date >= start_of_week:
+                    gear_activities_this_week["activities"].append(activity)
+                    if activity.distance is not None:
+                        gear_activities_this_week["distance_m"] += unit_helper.meter(
+                            activity.distance
+                        ).magnitude
+                    if activity.moving_time is not None:
+                        gear_activities_this_week["moving_time"] += (
+                            activity.moving_time.timedelta()
+                        )
+
+        # Process 30d stats
+        m_time_30d = gear_activities_30d["moving_time"]
+        gear_activities_30d["moving_time_s"] = m_time_30d.seconds
+        gear_activities_30d["moving_time_hh_mm"] = ":".join(
+            str(m_time_30d).split(":")[:2]
+        )
+
+        # Process this week stats
+        m_time_this_week = gear_activities_this_week["moving_time"]
+        gear_activities_this_week["moving_time_s"] = m_time_this_week.seconds
+        gear_activities_this_week["moving_time_hh_mm"] = ":".join(
+            str(m_time_this_week).split(":")[:2]
+        )
 
         return {
             "gear_id": gear_id,
             "name": gear.name,
             "brand_name": gear.brand_name,
+            "model_name": gear.model_name,
             "last_30_days": {
                 "distance_km": round(gear_activities_30d["distance_m"] / 1000, 1),
                 "time_hh_mm": gear_activities_30d["moving_time_hh_mm"],
                 "activity_count": len(gear_activities_30d["activities"]),
+            },
+            "this_week": {
+                "distance_km": round(gear_activities_this_week["distance_m"] / 1000, 1),
+                "time_hh_mm": gear_activities_this_week["moving_time_hh_mm"],
+                "activity_count": len(gear_activities_this_week["activities"]),
             },
             "last_activity": {
                 "distance_km": round(
@@ -133,7 +174,7 @@ async def get_gear_stats(user_id: str, gear_id: str):
             "distance_km": round(unit_helper.meter(gear.distance).magnitude / 1000, 0)
             if gear.distance is not None
             else 0,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
     except HTTPException as he:
