@@ -75,12 +75,12 @@ def create_gear_image(gear_stats: dict):
     ]
 
     def format_km(km: float) -> str:
-        """Format a distance in km. One decimal place below 1000 km, integer above."""
-        return f"{km:.1f}" if km < 1000 else f"{km:.0f}"
+        """Format a distance in km. One decimal place below 100 km, integer with thousands separator above."""
+        return f"{km:.1f}" if km < 100 else f"{km:,.0f}"
 
     # Define the text lines from gear_stats
     gear_name = gear_stats["name"].replace(brand_name, "").strip()
-    gear_distance = f"{gear_stats['distance_km']:.0f} km"
+    gear_distance = f"{format_km(gear_stats['distance_km'])} km"
 
     # If this week’s distance is zero, show 30d distance instead. Else, show “Off duty”
     def featured_distance(stats):
