@@ -1,6 +1,9 @@
 import logging
 import os
+
 from PIL import Image, ImageDraw, ImageFont
+
+from .config import DINISH_FONT_PATH
 
 # Define a base path for assets relative to the current script
 ASSETS_BASE_PATH = os.path.join(os.path.dirname(__file__), "assets")
@@ -53,11 +56,11 @@ def create_gear_image(gear_stats: dict):
     FONT_SIZE = 34
 
     font_regular = ImageFont.truetype(
-        os.path.join(ASSETS_BASE_PATH, "dinish-otf", "DINish-Medium.otf"),
+        os.path.join(DINISH_FONT_PATH, "DINish-Medium.ttf"),
         size=FONT_SIZE,
     )
     font_bold = ImageFont.truetype(
-        os.path.join(ASSETS_BASE_PATH, "dinish-otf", "DINish-Bold.otf"), size=FONT_SIZE
+        os.path.join(DINISH_FONT_PATH, "DINish-Bold.ttf"), size=FONT_SIZE
     )
 
     padding_left = specs["padding-left"]
@@ -90,7 +93,9 @@ def create_gear_image(gear_stats: dict):
     # Write the text on the image
     draw.text(text_positions[0], gear_name, fill=BLACK, font=font_bold)
     draw.text(text_positions[1], gear_distance, fill=BLACK, font=font_regular)
-    draw.text(text_positions[3], featured_distance(gear_stats), fill=BLACK, font=font_regular)
+    draw.text(
+        text_positions[3], featured_distance(gear_stats), fill=BLACK, font=font_regular
+    )
 
     # Return image as RGB
     return image.convert("RGB")

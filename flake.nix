@@ -39,13 +39,19 @@
       getPythonEnv =
         pkgs: extraPackages:
         (pythonVersion pkgs).withPackages (ps: getPythonPackages pkgs ps ++ extraPackages ps);
+
+      getFontPath = pkg: pkg.outPath + "/share/fonts/truetype";
     in
     {
       devShells = forAllSystems (
         { pkgs }:
         {
           default = pkgs.mkShell {
-            packages = [ (getPythonEnv pkgs (ps: [ ])) ];
+            packages = [
+              (getPythonEnv pkgs (ps: [ ]))
+              pkgs.dinish
+            ];
+            DINISH_FONT_PATH = getFontPath pkgs.dinish;
           };
         }
       );
@@ -62,6 +68,8 @@
 
             dependencies = getPythonPackages pkgs pkgs.python3Packages;
             build-system = [ pkgs.python3Packages.hatchling ];
+            buildInputs = [ pkgs.dinish ];
+            makeWrapperArgs = [ "--set DINISH_FONT_PATH ${getFontPath pkgs.dinish}" ];
 
             meta = {
               mainProgram = pname;

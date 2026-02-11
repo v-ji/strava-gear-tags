@@ -11,6 +11,7 @@ STRAVA_CLIENT_SECRET = os.environ["STRAVA_CLIENT_SECRET"]
 CALLBACK_URL = os.environ.get("CALLBACK_URL", "http://localhost:8000/strava/callback")
 
 STATE_DIR = os.environ.get("STATE_DIRECTORY", ".")
+DINISH_FONT_PATH = os.environ["DINISH_FONT_PATH"]
 
 # Validate credentials
 if not STRAVA_CLIENT_ID or not STRAVA_CLIENT_SECRET:
