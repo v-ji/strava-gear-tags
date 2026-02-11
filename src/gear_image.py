@@ -71,15 +71,26 @@ def create_gear_image(gear_stats: dict):
         for y in range(start_y, image.height, FONT_SIZE + line_spacing)
     ]
 
+    def format_km(km: float) -> str:
+        """Format a distance in km. One decimal place below 1000 km, integer above."""
+        return f"{km:.1f}" if km < 1000 else f"{km:.0f}"
+
     # Define the text lines from gear_stats
     gear_name = gear_stats["name"].replace(brand_name, "").strip()
     gear_distance = f"{gear_stats['distance_km']:.0f} km"
-    gear_this_week_distance = f"{gear_stats['this_week']['distance_km']:.0f} km (7d)"
+
+    # If this week’s distance is zero, show 30d distance instead. Else, show “Off duty”
+    def featured_distance(stats):
+        if stats["this_week"]["distance_km"] > 0:
+            return f"{format_km(stats['this_week']['distance_km'])} km (wk)"
+        if stats["last_30_days"]["distance_km"] > 0:
+            return f"{format_km(stats['last_30_days']['distance_km'])} km (30d)"
+        return "Off duty"
 
     # Write the text on the image
     draw.text(text_positions[0], gear_name, fill=BLACK, font=font_bold)
     draw.text(text_positions[1], gear_distance, fill=BLACK, font=font_regular)
-    draw.text(text_positions[3], gear_this_week_distance, fill=BLACK, font=font_regular)
+    draw.text(text_positions[3], featured_distance(gear_stats), fill=BLACK, font=font_regular)
 
     # Return image as RGB
     return image.convert("RGB")
