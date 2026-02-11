@@ -11,7 +11,7 @@ ASSETS_BASE_PATH = os.path.join(os.path.dirname(__file__), "assets")
 brand_config = {
     "Canyon": {
         "frame_path": os.path.join(ASSETS_BASE_PATH, "frames", "canyon.png"),
-        "padding-left": 28,
+        "padding-left": 32,
     },
     "Adidas": {
         "frame_path": os.path.join(ASSETS_BASE_PATH, "frames", "adidas.png"),
