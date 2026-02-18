@@ -1,16 +1,22 @@
-from fastapi import APIRouter, HTTPException
-from datetime import datetime, timedelta, timezone
-import logging
-from ..auth import get_client
-from stravalib import unit_helper
-from typing import List
-from pydantic import BaseModel
 import io
+import logging
+from datetime import datetime, time, timedelta, timezone
+from typing import List
+from zoneinfo import ZoneInfo
+
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from stravalib import unit_helper
+
+from ..auth import get_client
+from ..config import TZ
 from ..gear_image import create_gear_image
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+tz = ZoneInfo(TZ)
 
 
 class GearItem(BaseModel):
@@ -86,11 +92,13 @@ async def get_gear_stats(user_id: str, gear_id: str):
         gear = client.get_gear(gear_id)
 
         # Calculate start of this week (Monday)
-        today = datetime.now(timezone.utc)
-        start_of_week = today - timedelta(days=today.weekday())  # Monday is 0
+        start_of_today = datetime.combine(datetime.now(tz=tz), time.min, tzinfo=tz)
+        start_of_week = start_of_today - timedelta(
+            days=start_of_today.weekday()
+        )  # Monday is 0
 
         activities = client.get_activities(
-            after=start_of_week - timedelta(days=30)
+            after=start_of_today - timedelta(days=30)
         )  # Fetch enough activities to cover both ranges
 
         gear_activities_30d = {
@@ -108,7 +116,9 @@ async def get_gear_stats(user_id: str, gear_id: str):
         for activity in activities:
             if getattr(activity, "gear_id", None) == gear_id:
                 # Accumulate for last 30 days
-                if activity.start_date >= (today - timedelta(days=30)):
+                if activity.start_date and activity.start_date >= (
+                    start_of_today - timedelta(days=30)
+                ):
                     gear_activities_30d["activities"].append(activity)
                     if activity.distance is not None:
                         gear_activities_30d["distance_m"] += unit_helper.meter(
@@ -120,7 +130,7 @@ async def get_gear_stats(user_id: str, gear_id: str):
                         )
 
                 # Accumulate for this week
-                if activity.start_date >= start_of_week:
+                if activity.start_date and activity.start_date >= start_of_week:
                     gear_activities_this_week["activities"].append(activity)
                     if activity.distance is not None:
                         gear_activities_this_week["distance_m"] += unit_helper.meter(

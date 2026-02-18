@@ -13,6 +13,8 @@ CALLBACK_URL = os.environ.get("CALLBACK_URL", "http://localhost:8000/strava/call
 STATE_DIR = os.environ.get("STATE_DIRECTORY", ".")
 DINISH_FONT_PATH = os.environ["DINISH_FONT_PATH"]
 
+TZ = "Europe/Berlin"
+
 # Validate credentials
 if not STRAVA_CLIENT_ID or not STRAVA_CLIENT_SECRET:
     raise ValueError("Missing Strava credentials in environment")
