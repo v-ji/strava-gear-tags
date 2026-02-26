@@ -21,6 +21,10 @@ brand_config = {
         "frame_path": os.path.join(ASSETS_BASE_PATH, "frames", "nike.png"),
         "padding-left": 4,
     },
+    "PUMA": {
+        "frame_path": os.path.join(ASSETS_BASE_PATH, "frames", "puma.png"),
+        "padding-left": 4,
+    },
 }
 
 
